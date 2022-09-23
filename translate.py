@@ -1,13 +1,13 @@
 import pyscreenshot
 import pytesseract
-from threading import Thread
 from time import sleep
-from PIL import Image
 from googletrans import Translator
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
-def clipperForTranslate():
+def main():
+
+  pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
+  translator = Translator()
 
   OFFSETX = 0
   OFFSETY = 100
@@ -16,27 +16,14 @@ def clipperForTranslate():
 
   while True:
     clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
-    clip.save("clip.jpg")
-    sleep(1500/1000)
-
-def OCRandTranslate():
-
-  translator = Translator()
-
-  while True:
+    ocrString = pytesseract.image_to_string(clip)
     try:
-      clip = Image.open("clip.jpg")
-      ocrString = pytesseract.image_to_string(clip)
-      try:
-        print(translator.translate(ocrString, dest="tr").text)
-        print("-----------------------------------------")
-        sleep(3)
-      except:
-        sleep(500/1000)
-        continue
-    except FileNotFoundError:
+      print(translator.translate(ocrString, dest="tr").text)
+      print("-----------------------------------------")
+      sleep(3)
+    except:
       sleep(500/1000)
       continue
 
-Thread(target=OCRandTranslate).start()
-Thread(target=clipperForTranslate, daemon=True).start()
+if __name__ == "__main__":
+  main()
