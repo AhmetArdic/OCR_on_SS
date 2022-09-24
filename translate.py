@@ -45,6 +45,8 @@ def main():
       try:
         clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
         ocrString = pytesseract.image_to_string(clip)
+        ocrString = ocrString.replace("-\n", "")
+        ocrString = ocrString.replace("\n", " ")
         try:
           print(translator.translate(ocrString, dest="tr").text)
           print("-----------------------------------------")
