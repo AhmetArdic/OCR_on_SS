@@ -1,18 +1,13 @@
 import pyscreenshot
 import pytesseract
-import cv2
-import numpy
 from  pynput import keyboard
 import pyautogui
 from time import sleep
 from googletrans import Translator
+from PIL import Image
 
 
-OFFSETX = 0
-OFFSETY = 0
-GENISLIK = 0
-UZUNLUK = 0
-
+OFFSETX, OFFSETY, GENISLIK, UZUNLUK = 0, 0, 0, 0
 
 def onRelease(key):
 
@@ -31,6 +26,14 @@ def onPress(key):
   if key == keyboard.Key.shift:
     OFFSETX, OFFSETY = pyautogui.position()
 
+def setDPI300(file_path):
+  im = Image.open(file_path)
+  length_x, width_y = im.size
+  factor = min(1, float(1024.0 / length_x))
+  size = int(factor * length_x), int(factor * width_y)
+  im_resized = im.resize(size, Image.Resampling.LANCZOS)
+  im_resized.save(file_path, dpi=(300, 300))
+
 
 def main():
 
@@ -44,7 +47,9 @@ def main():
 
     while True:
 
-      clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
+      pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK)).save("clip.jpg")
+      setDPI300("clip.jpg")
+      clip = Image.open("clip.jpg")
       ocrString = pytesseract.image_to_string(clip)
       ocrString = ocrString.replace("-\n", "")
       ocrString = ocrString.replace("\n", " ")
