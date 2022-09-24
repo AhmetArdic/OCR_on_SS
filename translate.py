@@ -7,24 +7,24 @@ from googletrans import Translator
 from PIL import Image
 
 
-OFFSETX, OFFSETY, GENISLIK, UZUNLUK = 0, 0, 0, 0
+X1, Y1, X2, Y2 = 0, 0, 1, 1
 
 def onRelease(key):
 
-  global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
+  global X2, Y2
 
   if key == keyboard.Key.shift:
-    GENISLIK, UZUNLUK = pyautogui.position()
+    X2, Y2 = pyautogui.position()
     return False
 
 def onPress(key):
 
-  global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
+  global X1, Y1, X2, Y2
 
-  OFFSETX, OFFSETY, GENISLIK, UZUNLUK = 0, 0, 0, 0
+  X1, Y1, X2, Y2 = 0, 0, 0, 0
 
   if key == keyboard.Key.shift:
-    OFFSETX, OFFSETY = pyautogui.position()
+    X1, Y1 = pyautogui.position()
 
 def setDPI300(file_path):
   im = Image.open(file_path)
@@ -37,17 +37,17 @@ def setDPI300(file_path):
 
 def main():
 
-  global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
+  global X1, Y1, X2, Y2
 
-  with keyboard.Listener(on_press=onPress, on_release=onRelease) as shiftWaiter:
-    shiftWaiter.join()
+  with keyboard.Listener(on_press=onPress, on_release=onRelease) as clipArea:
+    clipArea.join()
 
     translator = Translator()
     pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
     while True:
 
-      pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK)).save("clip.jpg")
+      pyscreenshot.grab(bbox=(X1, Y1, X2, Y2)).save("clip.jpg")
       setDPI300("clip.jpg")
       clip = Image.open("clip.jpg")
       ocrString = pytesseract.image_to_string(clip)
