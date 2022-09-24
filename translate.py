@@ -22,9 +22,14 @@ def onPress(key):
   global X1, Y1, X2, Y2
   global tempX1, tempY1, tempX2, tempY2
 
+  try:
+      charKey = key.char
+  except:
+      charKey = None
+
   if key == keyboard.Key.shift:
     tempX1, tempY1 = pyautogui.position()
-  elif key.char in ["y", "Y"]:
+  elif charKey in ["y", "Y"]:
     X1, Y1, X2, Y2 = tempX1, tempY1, tempX2, tempY2
 
 
