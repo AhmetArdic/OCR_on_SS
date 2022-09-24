@@ -31,6 +31,7 @@ def onPress(key):
   if key == keyboard.Key.shift:
     OFFSETX, OFFSETY = pyautogui.position()
 
+
 def main():
 
   global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
@@ -42,19 +43,17 @@ def main():
     pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
     while True:
+
+      clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
+      ocrString = pytesseract.image_to_string(clip)
+      ocrString = ocrString.replace("-\n", "")
+      ocrString = ocrString.replace("\n", " ")
+
       try:
-        clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
-        ocrString = pytesseract.image_to_string(clip)
-        ocrString = ocrString.replace("-\n", "")
-        ocrString = ocrString.replace("\n", " ")
-        try:
-          print(translator.translate(ocrString, dest="tr").text)
-          print("-----------------------------------------")
-          sleep(3)
-        except:
-          sleep(500/1000)
-          continue
-      except FileNotFoundError:
+        print(translator.translate(ocrString, dest="tr").text)
+        print("-----------------------------------------")
+        sleep(3)
+      except:
         sleep(500/1000)
         continue
 
