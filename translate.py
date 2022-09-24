@@ -8,23 +8,25 @@ from PIL import Image
 
 
 X1, Y1, X2, Y2 = 0, 0, 1, 1
+tempX1, tempY1, tempX2, tempY2 = 0, 0, 0, 0
 
 def onRelease(key):
 
-  global X2, Y2
+  global tempX2, tempY2
 
   if key == keyboard.Key.shift:
-    X2, Y2 = pyautogui.position()
-    return False
+    tempX2, tempY2 = pyautogui.position()
 
 def onPress(key):
 
   global X1, Y1, X2, Y2
-
-  X1, Y1, X2, Y2 = 0, 0, 0, 0
+  global tempX1, tempY1, tempX2, tempY2
 
   if key == keyboard.Key.shift:
-    X1, Y1 = pyautogui.position()
+    tempX1, tempY1 = pyautogui.position()
+  elif key.char in ["y", "Y"]:
+    X1, Y1, X2, Y2 = tempX1, tempY1, tempX2, tempY2
+
 
 def setDPI300(file_path):
   im = Image.open(file_path)
@@ -39,8 +41,7 @@ def main():
 
   global X1, Y1, X2, Y2
 
-  with keyboard.Listener(on_press=onPress, on_release=onRelease) as clipArea:
-    clipArea.join()
+  with keyboard.Listener(on_press=onPress, on_release=onRelease):
 
     translator = Translator()
     pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
