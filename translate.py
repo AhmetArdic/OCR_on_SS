@@ -1,42 +1,61 @@
 import pyscreenshot
 import pytesseract
-from threading import Thread
+import cv2
+import numpy
+from  pynput import keyboard
+import pyautogui
 from time import sleep
-from PIL import Image
 from googletrans import Translator
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
-def clipperForTranslate():
+OFFSETX = 0
+OFFSETY = 0
+GENISLIK = 0
+UZUNLUK = 0
 
-  OFFSETX = 0
-  OFFSETY = 100
-  GENISLIK = 720
-  UZUNLUK = 980
 
-  while True:
-    clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
-    clip.save("clip.jpg")
-    sleep(1500/1000)
+def onRelease(key):
 
-def OCRandTranslate():
+  global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
 
-  translator = Translator()
+  if key == keyboard.Key.shift:
+    GENISLIK, UZUNLUK = pyautogui.position()
+    return False
 
-  while True:
-    try:
-      clip = Image.open("clip.jpg")
-      ocrString = pytesseract.image_to_string(clip)
+def onPress(key):
+
+  global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
+
+  OFFSETX, OFFSETY, GENISLIK, UZUNLUK = 0, 0, 0, 0
+
+  if key == keyboard.Key.shift:
+    OFFSETX, OFFSETY = pyautogui.position()
+
+def main():
+
+  global OFFSETX, OFFSETY, GENISLIK, UZUNLUK
+
+  with keyboard.Listener(on_press=onPress, on_release=onRelease) as shiftWaiter:
+    shiftWaiter.join()
+
+    translator = Translator()
+    pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
+
+    while True:
       try:
-        print(translator.translate(ocrString, dest="tr").text)
-        print("-----------------------------------------")
-        sleep(3)
-      except:
+        clip = pyscreenshot.grab(bbox=(OFFSETX, OFFSETY, GENISLIK, UZUNLUK))
+        ocrString = pytesseract.image_to_string(clip)
+        try:
+          print(translator.translate(ocrString, dest="tr").text)
+          print("-----------------------------------------")
+          sleep(3)
+        except:
+          sleep(500/1000)
+          continue
+      except FileNotFoundError:
         sleep(500/1000)
         continue
-    except FileNotFoundError:
-      sleep(500/1000)
-      continue
 
-Thread(target=OCRandTranslate).start()
-Thread(target=clipperForTranslate, daemon=True).start()
+
+if __name__ == "__main__":
+  main()
