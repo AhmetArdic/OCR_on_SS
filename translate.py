@@ -35,19 +35,23 @@ def onPress(key):
   elif charKey in ["y", "Y"]:
     X1, Y1, X2, Y2 = tempX1, tempY1, tempX2, tempY2
 
-    pyscreenshot.grab(bbox=(X1, Y1, X2, Y2)).save("clip.jpg")
-    setDPI300("clip.jpg")
-    clip = Image.open("clip.jpg")
-    ocrString = pytesseract.image_to_string(clip)
-    ocrString = ocrString.replace("-\n", "")
-    ocrString = ocrString.replace("\n", " ")
-    ocrString = ocrString.replace(".", ".\n")
-
     try:
-      print(translator.translate(ocrString, dest="tr").text)
+      pyscreenshot.grab(bbox=(X1, Y1, X2, Y2)).save("clip.jpg")
+      setDPI300("clip.jpg")
+      clip = Image.open("clip.jpg")
+      ocrString = pytesseract.image_to_string(clip)
+      ocrString = ocrString.replace("-\n", "")
+      ocrString = ocrString.replace("\n", " ")
+      # ocrString = ocrString.replace(".", ".\n")
+
+      try:
+        print(translator.translate(ocrString, dest="tr").text)
+        print("-----------------------------------------")
+      except:
+        pass
+    except ValueError:
+      print("Alan seciminde hata, tekrar alan seciniz.")
       print("-----------------------------------------")
-    except:
-      pass
 
 
 def setDPI300(file_path):
