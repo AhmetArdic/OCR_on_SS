@@ -3,7 +3,6 @@ import pytesseract
 from  pynput import keyboard
 import pyautogui
 from time import sleep
-from googletrans import Translator
 from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
@@ -23,8 +22,6 @@ def onPress(key):
   global X1, Y1, X2, Y2
   global tempX1, tempY1, tempX2, tempY2
 
-  translator = Translator()
-
   try:
       charKey = key.char
   except:
@@ -41,11 +38,11 @@ def onPress(key):
       clip = Image.open("clip.jpg")
       ocrString = pytesseract.image_to_string(clip)
       ocrString = ocrString.replace("-\n", "")
-      ocrString = ocrString.replace("\n", " ")
+      # ocrString = ocrString.replace("\n", " ")
       # ocrString = ocrString.replace(".", ".\n")
 
       try:
-        print(translator.translate(ocrString, dest="tr").text)
+        print(ocrString)
         print("-----------------------------------------")
       except:
         pass
