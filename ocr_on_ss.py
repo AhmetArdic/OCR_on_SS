@@ -5,7 +5,6 @@ import cv2
 from time import sleep
 from  pynput import keyboard
 
-
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
 X1, Y1, X2, Y2 = 0, 0, 1, 1
@@ -70,12 +69,16 @@ def onPress(key):
       # ocrString = ocrString.replace(".", ".\n")
 
       try:
+        result = ""
         if("_" in ocrString):
-          print("Aşağıdaki '_' olan yere ne gelmelidir?")
+          result += "Aşağıdaki '_' olan yere ne gelmelidir?\n"
         else:
-          print("Aşağıdaki soruyu yanıtlar mısın?")
-        print('"' + ocrString + '"')
+          result += "Aşağıdaki soruyu yanıtlar mısın?\n"
+        result += '"' + ocrString + '"'
+
+        print(result)
         print("-----------------------------------------")
+
       except:
         pass
     except ValueError:
