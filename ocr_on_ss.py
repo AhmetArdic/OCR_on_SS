@@ -1,9 +1,10 @@
 import pyscreenshot
 import pytesseract
-from  pynput import keyboard
 import pyautogui
+import cv2 
 from time import sleep
-from PIL import Image
+from  pynput import keyboard
+
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
@@ -33,31 +34,53 @@ def onPress(key):
     X1, Y1, X2, Y2 = tempX1, tempY1, tempX2, tempY2
 
     try:
+      # Ekran görüntüsünü al
       pyscreenshot.grab(bbox=(X1, Y1, X2, Y2)).save("clip.jpg")
-      setDPI300("clip.jpg")
-      clip = Image.open("clip.jpg")
-      ocrString = pytesseract.image_to_string(clip)
-      ocrString = ocrString.replace("-\n", "")
+
+      # Ekran görüntüsünü oku
+      image = cv2.imread("clip.jpg")
+
+      # Görüntüyü %200 oranında büyüt
+      resized = cv2.resize(image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+
+      # Ekran görüntüsünü gri tonlamaya dönüştür
+      gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+
+      # Gürültüyü azaltmak için görüntüyü bulanıklaştır
+      blur = cv2.GaussianBlur(gray, (3, 3), 0)
+
+      # Adaptive threshold uygula
+      thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 15, 15)
+
+      # Dil işlemleri ile karakterleri birleştir
+      kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
+      dilation = cv2.dilate(thresh, kernel, iterations=1)
+      closing = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, kernel, iterations=1)
+
+      # İşlenmiş ekran görüntüsünü kaydet
+      cv2.imwrite("output.jpg", closing)
+
+      # Tesseract OCR kullanarak görüntüden metni al
+      custom_config = r'--oem 3 --psm 6'
+      ocrString = pytesseract.image_to_string(closing, config=custom_config)
+
+      # Çıktı düzenleme
+      # ocrString = ocrString.replace("-\n", "")
       # ocrString = ocrString.replace("\n", " ")
       # ocrString = ocrString.replace(".", ".\n")
 
       try:
-        print(ocrString)
+        if("_" in ocrString):
+          print("Aşağıdaki '_' olan yere ne gelmelidir?")
+        else:
+          print("Aşağıdaki soruyu yanıtlar mısın?")
+        print('"' + ocrString + '"')
         print("-----------------------------------------")
       except:
         pass
     except ValueError:
       print("Alan seciminde hata, tekrar alan seciniz.")
       print("-----------------------------------------")
-
-
-def setDPI300(file_path):
-  im = Image.open(file_path)
-  length_x, width_y = im.size
-  factor = min(1, float(1024.0 / length_x))
-  size = int(factor * length_x), int(factor * width_y)
-  im_resized = im.resize(size, Image.Resampling.LANCZOS)
-  im_resized.save(file_path, dpi=(300, 300))
 
 
 keyboard.Listener(on_press=onPress, on_release=onRelease).start()
