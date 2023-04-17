@@ -69,16 +69,8 @@ def onPress(key):
       # ocrString = ocrString.replace(".", ".\n")
 
       try:
-        result = ""
-        if("_" in ocrString):
-          result += "Aşağıdaki '_' olan yere ne gelmelidir?\n"
-        else:
-          result += "Aşağıdaki soruyu yanıtlar mısın?\n"
-        result += '"' + ocrString + '"'
-
-        print(result)
+        print(ocrString)
         print("-----------------------------------------")
-
       except:
         pass
     except ValueError:
