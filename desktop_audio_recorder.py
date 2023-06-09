@@ -1,7 +1,6 @@
 import pyaudio
 import wave
 from pynput import keyboard
-from time import sleep
 
 class DesktopAudioRecorder:
     def __init__(self):
