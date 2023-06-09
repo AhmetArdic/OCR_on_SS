@@ -49,6 +49,7 @@ class DesktopAudioRecorder:
             wf.writeframes(b"".join(self.frames))
             wf.close()
             print("Kaydedilen ses dosyasi:", self.OUTPUT_FILENAME)
+            print("-----------------------------------------")
             self.frames = []
 
     def record_sound(self, in_data, frame_count, time_info, status):
@@ -76,13 +77,9 @@ class DesktopAudioRecorder:
                 return False
 
     def run(self):
-        print("Kaydetmek icin 'k' tusuna basin. Kaydetmeyi durdurmak icin 'k' tusunu birakin.")
         self.find_audio_device()
 
         keyboard.Listener(on_press=self.on_press, on_release=self.on_release).start()
-
-        while True:
-            sleep(100)
 
 # if __name__ == "__main__":
 #     recorder = DesktopAudioRecorder()

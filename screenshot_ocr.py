@@ -2,7 +2,6 @@ import pyscreenshot
 import pytesseract
 import pyautogui
 import cv2 
-from time import sleep
 from  pynput import keyboard
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
@@ -34,7 +33,7 @@ class ScreenshotOCR:
 
         if key == keyboard.Key.shift:
             self.X1, self.Y1 = pyautogui.position()
-        elif charKey in ["y", "Y"]:
+        elif charKey in ["p", "P"]:
             self.print_ocr()
         elif charKey in ["o", "O"]:
             self.perform_ocr()
@@ -103,10 +102,7 @@ class ScreenshotOCR:
     def run(self):
         keyboard.Listener(on_press=self.onPress, on_release=self.onRelease).start()
 
-        while True:
-            sleep(100)
 
-
-if __name__ == "__main__":
-    ocr = ScreenshotOCR()
-    ocr.run()
+# if __name__ == "__main__":
+#     ocr = ScreenshotOCR()
+#     ocr.run()
