@@ -1,84 +1,74 @@
 import pyaudio
 import wave
-from pynput import keyboard
+import speech_recognizer
 
 class DesktopAudioRecorder:
     def __init__(self):
-        self.CHUNK = 1024
-        self.FORMAT = pyaudio.paInt16
-        self.CHANNELS = 4
-        self.RATE = 48000
-        self.OUTPUT_FILENAME = "output.wav"
-        self.p = pyaudio.PyAudio()
-        self.frames = []
+        self._CHUNK = 1024
+        self._FORMAT = pyaudio.paInt16
+        self._CHANNELS = 2
+        self._RATE = 44100
+        self._OUTPUT_FILENAME = "output.wav"
+        
+        self._p = pyaudio.PyAudio()
+        self._frames = []
         self.recording = False
-        self.stream = None
-        self.device_index = None
+        self._stream = None
+        self._device_index = 2
 
-    def find_audio_device(self):
-        for i in range(self.p.get_device_count()):
-            info = self.p.get_device_info_by_index(i)
-            if "Microsoft Sound Mapper - Input" in info["name"]:
-                self.device_index = info["index"]
-                break
+        self.audioString = ""
+
+    def print_audio_device(self):
+        for i in range(self._p.get_device_count()):
+            info = self._p.get_device_info_by_index(i)
+            print(info)
 
     def start_recording(self):
-        if not self.recording:
-            print("Kayit basladi...")
-            self.recording = True
-            self.stream = self.p.open(format=self.FORMAT,
-                                      channels=self.CHANNELS,
-                                      rate=self.RATE,
-                                      input=True,
-                                      input_device_index=self.device_index,
-                                      frames_per_buffer=self.CHUNK,
-                                      stream_callback=self.record_sound)
+        print("Kayit basladi...")
+        self._stream = self._p.open(format=self._FORMAT,
+                                    channels=self._CHANNELS,
+                                    rate=self._RATE,
+                                    input=True,
+                                    input_device_index=self._device_index,
+                                    frames_per_buffer=self._CHUNK,
+                                    stream_callback=self.record_sound)
 
     def stop_recording(self):
-        if self.recording:
-            print("Kayit tamamlandi.")
-            self.recording = False
-            self.stream.stop_stream()
-            self.stream.close()
-            # self.p.terminate()
-            wf = wave.open(self.OUTPUT_FILENAME, "wb")
-            wf.setnchannels(self.CHANNELS)
-            wf.setsampwidth(self.p.get_sample_size(self.FORMAT))
-            wf.setframerate(self.RATE)
-            wf.writeframes(b"".join(self.frames))
-            wf.close()
-            print("Kaydedilen ses dosyasi:", self.OUTPUT_FILENAME)
-            print("-----------------------------------------")
-            self.frames = []
+        print("Kayit tamamlandi.")
+        self._stream.stop_stream()
+        self._stream.close()
+        # self._p.terminate()
+        wf = wave.open(self._OUTPUT_FILENAME, "wb")
+        wf.setnchannels(self._CHANNELS)
+        wf.setsampwidth(self._p.get_sample_size(self._FORMAT))
+        wf.setframerate(self._RATE)
+        wf.writeframes(b"".join(self._frames))
+        wf.close()
+        print("Kaydedilen ses dosyasi:", self._OUTPUT_FILENAME)
+        print("-----------------------------------------")
+        self._frames = []
 
     def record_sound(self, in_data, frame_count, time_info, status):
-        self.frames.append(in_data)
+        self._frames.append(in_data)
         return (in_data, pyaudio.paContinue)
+    
+    def speech_to_text(self):
+        recognizer = speech_recognizer.SpeechRecognizer("output.wav")
+        recognizer.run_for_large_audio()
+        self.audioString = recognizer.full_text
+        print("\nTam Yazi:", recognizer.full_text)
+        print("-----------------------------------------")
 
-    def on_press(self, key):
-        try:
-            charKey = key.char
-        except AttributeError:
-            charKey = None
-
-        if charKey in ["k", "K"]:
+    def process_k(self):
+        if not self.recording:
+            self.recording= True
             self.start_recording()
-
-    def on_release(self, key):
-        try:
-            charKey = key.char
-        except AttributeError:
-            charKey = None
-
-        if charKey in ["k", "K"]:
+        elif self.recording:
+            self.recording = False
             self.stop_recording()
-            if key == keyboard.Key.esc:
-                return False
 
-    def run(self):
-        self.find_audio_device()
-
-        keyboard.Listener(on_press=self.on_press, on_release=self.on_release).start()
+    def process_l(self):
+        self.speech_to_text()
 
 # if __name__ == "__main__":
 #     recorder = DesktopAudioRecorder()

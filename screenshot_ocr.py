@@ -2,41 +2,35 @@ import pyscreenshot
 import pytesseract
 import pyautogui
 import cv2 
-from  pynput import keyboard
+import numpy as np
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract"
 
 class ScreenshotOCR:
     def __init__(self):
-        self.X1, self.Y1 = 0, 0
+        self._X1, self._Y1 = 0, 0
         self.ocrString = ""
+        self._processedImage = np.zeros([100,100,3],dtype=np.uint8)
+        self._clip = np.zeros([100,100,3],dtype=np.uint8)
 
-    def onRelease(self, key):
-        if key == keyboard.Key.shift:
-            self.X2, self.Y2 = pyautogui.position()
+        self._clip.fill(255)
+        self._processedImage.fill(255)
 
-            try:
-                # Ekran görüntüsünü al
-                pyscreenshot.grab(bbox=(self.X1, self.Y1, self.X2, self.Y2)).save("clip.jpg")
+    def first_corner_process(self):
+        self._X1, self._Y1 = pyautogui.position()
 
-                # Görüntüyü işle
-                self.process_image()
-            except ValueError:
-                print("Alan seciminde hata, tekrar alan seciniz.")
-                print("-----------------------------------------")
+    def second_corner_process(self):
+        self._X2, self._Y2 = pyautogui.position()
 
-    def onPress(self, key):
         try:
-            charKey = key.char
-        except:
-            charKey = None
+            # Ekran görüntüsünü al
+            self._clip = np.array(pyscreenshot.grab(bbox=(self._X1, self._Y1, self._X2, self._Y2))) 
 
-        if key == keyboard.Key.shift:
-            self.X1, self.Y1 = pyautogui.position()
-        elif charKey in ["p", "P"]:
-            self.print_ocr()
-        elif charKey in ["o", "O"]:
-            self.perform_ocr()
+            # Görüntüyü işle
+            self.process_image()
+        except ValueError:
+            print("Alan seciminde hata, tekrar alan seciniz.")
+            print("-----------------------------------------")
 
     def print_ocr(self):
       # Çıktı düzenleme
@@ -51,19 +45,18 @@ class ScreenshotOCR:
         print("OCR yapilamadi!!!")
 
     def perform_ocr(self):
-        # Ekran görüntüsünü oku
-        ocrImage = cv2.imread("output.jpg")
-
         # Tesseract OCR kullanarak görüntüden metni al
         custom_config = r'--oem 3 --psm 6'
         # custom_config = r'--oem 2 --psm 4'
-        self.ocrString = pytesseract.image_to_string(ocrImage, config=custom_config)
+        self.ocrString = pytesseract.image_to_string(self._processedImage, config=custom_config)
         # self.ocrString = pytesseract.image_to_string(ocrImage)
+
+        self.print_ocr()
 
     def process_image(self):
         try:
             # Ekran görüntüsünü oku
-            image = cv2.imread("clip.jpg")
+            image = self._clip
 
             # Görüntüyü büyüt
             resized = cv2.resize(image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
@@ -94,13 +87,23 @@ class ScreenshotOCR:
             closing = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, kernel, iterations=1)
 
             # İşlenmiş ekran görüntüsünü kaydet
+            self._processedImage = np.array(closing)
             cv2.imwrite("output.jpg", closing)
         except ValueError:
             print("Alan seçiminde hata, tekrar alan seçiniz.")
             print("-----------------------------------------")
 
-    def run(self):
-        keyboard.Listener(on_press=self.onPress, on_release=self.onRelease).start()
+    def process_f(self):
+        self.first_corner_process()
+
+    def process_s(self):
+        self.second_corner_process()
+
+    def process_o(self):
+        self.perform_ocr()
+
+    def process_p(self):
+        self.print_ocr()
 
 
 # if __name__ == "__main__":

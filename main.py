@@ -1,22 +1,38 @@
 import desktop_audio_recorder
 import screenshot_ocr
+import communication
+import dual_writer
 
-import time
-import threading
+import sys
+
+class Main:
+    def __init__(self):
+        self.recorder = desktop_audio_recorder.DesktopAudioRecorder()
+        self.ocr = screenshot_ocr.ScreenshotOCR()
+        self.communication = communication.SerialModule('COM1', 9600, 'N', 8)
+        self.dual_printer = dual_writer.DualWriter(self.communication, sys.stdout)
+
+        sys.stdout = self.dual_printer
+
+        self.communication.open()
+
+        print("k, K -> ses kayit/kaydet")
+        print("l, L -> kayitli sesi yaziya cevir")
+        print("f, F -> yazi kapsayan cercevenin sol ust kosesi (first corner)")
+        print("s, S -> yazi kapsayan cercevenin sag alt kosesi (second corner)")
+        print("o, O -> ekran goruntusunden OCR yap ve yazdir")
+        print("-----------------------------------------")
+
+        self.communication.add_listener('f', self.ocr.process_f); self.communication.add_listener('F', self.ocr.process_f)
+        self.communication.add_listener('s', self.ocr.process_s); self.communication.add_listener('S', self.ocr.process_s)
+        self.communication.add_listener('o', self.ocr.process_o); self.communication.add_listener('O', self.ocr.process_o)
+        # self.communication.add_listener('p', self.ocr.process_p); self.communication.add_listener('P', self.ocr.process_p)
+        self.communication.add_listener('k', self.recorder.process_k); self.communication.add_listener('K', self.recorder.process_k)
+        self.communication.add_listener('l', self.recorder.process_l); self.communication.add_listener('L', self.recorder.process_l)
+
+    def run(self):
+        self.communication.listen()
 
 if __name__ == "__main__":
-    recorder = desktop_audio_recorder.DesktopAudioRecorder()
-    ocr = screenshot_ocr.ScreenshotOCR()
-
-    print("Kaydetmek icin 'k' tusuna basin. Kaydetmeyi durdurmak icin 'k' tusunu birakin.")
-    print("Ekran goruntusu almak icin, secilecek metnin sol ust kosesine cursor getirip 'shift' tusuna basin, bu tus basili iken")
-    print("metnin sag alt kosesine cursor getirin ve 'shift' tusundan elinizi cekin.")
-    print("OCR yapmak icin 'o' tusuna basin.")
-    print("OCR metnini yazdirmak için 'p' tusuna basin.")
-    print("-----------------------------------------")
-
-    threading.Thread(target=recorder.run())
-    threading.Thread(target=ocr.run()) 
-
-while True:
-    time.sleep(100)
+    main = Main()
+    main.run()
