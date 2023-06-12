@@ -27,7 +27,7 @@ class SpeechRecognizer:
             try:
                 text = self.transcribe_audio(chunk_filename)
             except sr.UnknownValueError as e:
-                print("Error:", str(e))
+                print("Hata: Metne dokulecek ses kaydi yok!!!", str(e))
             else:
                 text = f"{text.capitalize()}. "
                 print(chunk_filename, ":", text)
@@ -54,7 +54,7 @@ class SpeechRecognizer:
             try:
                 text = self.transcribe_audio(chunk_filename)
             except sr.UnknownValueError as e:
-                print("Error:", str(e))
+                print("Hata: Metne dokulecek ses kaydi yok!!!", str(e))
             else:
                 text = f"{text.capitalize()}. "
                 print(chunk_filename, ":", text)
